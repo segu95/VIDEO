@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in ["ADMIN_EMAIL_AQUI"];
+    }
+    match /public/app {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /chat/{messageId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name','message','createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 40
+        && request.resource.data.message is string && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 500;
+      allow update, delete: if isAdmin();
+    }
+  }
+}
