@@ -1,0 +1,49 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/config.php';
+session_start();
+if (isset($_GET['logout'])) { session_destroy(); header('Location: admin.php'); exit; }
+$error = '';
+if (empty($_SESSION['radio_admin']) && $_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='login') {
+ $u=(string)($_POST['username']??''); $p=(string)($_POST['password']??'');
+ if($u===ADMIN_USER && ADMIN_PASSWORD_HASH!=='REEMPLAZAR_POR_HASH_GENERADO' && password_verify($p,ADMIN_PASSWORD_HASH)){
+  session_regenerate_id(true);$_SESSION['radio_admin']=true;header('Location: admin.php');exit;
+ } $error='Usuario o contraseña incorrectos. Revisa config.php.';
+}
+if(empty($_SESSION['radio_admin'])): ?>
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acceso · La Grande de Huétamo</title><style>
+*{box-sizing:border-box}body{margin:0;background:#111;color:#fff;font:16px Arial;display:grid;place-items:center;min-height:100vh}form{width:min(92%,390px);background:#202020;padding:30px;border:1px solid #444;border-radius:20px}h1{font-size:24px;color:#ef2632}input,button{width:100%;padding:14px;margin:8px 0;border-radius:10px;border:1px solid #555;background:#111;color:white}button{background:#d71920;border:0;font-weight:bold;cursor:pointer}.err{color:#ff8585}</style>
+<form method="post"><h1>LA GRANDE DE HUÉTAMO</h1><p>Panel de administración</p><?php if($error):?><p class="err"><?=h($error)?></p><?php endif;?><input type="hidden" name="action" value="login"><input name="username" placeholder="Usuario" required><input type="password" name="password" placeholder="Contraseña" required><button>INGRESAR</button></form></html><?php exit; endif;
+require_admin(); $notice='';
+if($_SERVER['REQUEST_METHOD']==='POST'){
+ $action=$_POST['action']??'';
+ if($action==='save'){
+  $allowed=['station_name','headline','eyebrow','subtitle','status_text','stream_url','facebook_url','whatsapp_number','whatsapp_message','primary_color','accent_color','chat_enabled'];
+  foreach($allowed as $k)save_setting($k,trim((string)($_POST[$k]??'')));
+  foreach(['clear_logo'=>'logo_url','clear_background'=>'background_url'] as $f=>$k)if(!empty($_POST[$f]))save_setting($k,'');
+  foreach(['logo_file'=>'logo_url','background_file'=>'background_url'] as $field=>$key){
+   if(!empty($_FILES[$field]['name'])&&is_uploaded_file($_FILES[$field]['tmp_name'])){
+    $f=$_FILES[$field];$mime=(new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);$ext=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp'][$mime]??null;
+    if($ext&&$f['size']<=8*1024*1024){if(!is_dir(UPLOAD_DIR))mkdir(UPLOAD_DIR,0755,true);$name=$key.'_'.bin2hex(random_bytes(6)).'.'.$ext;if(move_uploaded_file($f['tmp_name'],UPLOAD_DIR.$name))save_setting($key,UPLOAD_URL.$name);}
+   }
+  } $notice='Configuración guardada.';
+ }elseif($action==='add_link'){
+  $q=db()->prepare('INSERT INTO links(label,url,icon,sort_order,is_active) VALUES(?,?,?,?,1)');$q->execute([trim($_POST['label']??''),trim($_POST['url']??''),trim($_POST['icon']??'language'),(int)($_POST['sort_order']??0)]);$notice='Botón agregado.';
+ }elseif($action==='update_link'){
+  $q=db()->prepare('UPDATE links SET label=?,url=?,icon=?,sort_order=?,is_active=? WHERE id=?');$q->execute([trim($_POST['label']??''),trim($_POST['url']??''),trim($_POST['icon']??'language'),(int)($_POST['sort_order']??0),isset($_POST['is_active'])?1:0,(int)$_POST['id']]);$notice='Botón actualizado.';
+ }elseif($action==='delete_link'){
+  $q=db()->prepare('DELETE FROM links WHERE id=?');$q->execute([(int)$_POST['id']]);$notice='Botón eliminado.';
+ }
+}
+$links=db()->query('SELECT * FROM links ORDER BY sort_order,id')->fetchAll();
+function val(string $k,string $d=''):string{return h(setting($k,$d));}
+?>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel · La Grande de Huétamo</title><style>
+*{box-sizing:border-box}body{margin:0;background:#111;color:#f7f7f7;font:15px Arial}header{background:#1d1d1d;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #d71920}header strong{color:#ff303b;font-size:20px}.wrap{max-width:1050px;margin:25px auto;padding:0 16px}.card{background:#202020;border:1px solid #3b3b3b;border-radius:16px;padding:22px;margin:18px 0}h2{margin-top:0;font-size:20px;color:#ffd400}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}label{display:block;color:#ccc;font-size:13px;margin:9px 0 5px}input,textarea,select{width:100%;padding:12px;border-radius:9px;border:1px solid #555;background:#121212;color:white}button,.btn{border:0;border-radius:9px;background:#d71920;color:#fff;padding:12px 16px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}.secondary{background:#444}.danger{background:#7b2020}.notice{background:#153c27;padding:12px;border-radius:9px}.item{border-top:1px solid #444;padding:15px 0}.item form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}small{color:#aaa}a{color:#fff}@media(max-width:500px){header{align-items:flex-start;gap:12px;flex-direction:column}}
+</style></head><body><header><strong>LA GRANDE DE HUÉTAMO · ADMIN</strong><a class="btn secondary" href="?logout=1">Cerrar sesión</a></header><div class="wrap">
+<?php if($notice):?><p class="notice"><?=h($notice)?></p><?php endif;?>
+<form class="card" method="post" enctype="multipart/form-data"><h2>Identidad y pantalla principal</h2><input type="hidden" name="action" value="save"><div class="grid">
+<div><label>Nombre de emisora</label><input name="station_name" value="<?=val('station_name','La Grande de Huétamo')?>"></div><div><label>Título principal</label><input name="headline" value="<?=val('headline','La Grande de Huétamo')?>"></div><div><label>Texto superior</label><input name="eyebrow" value="<?=val('eyebrow','LA GRANDE')?>"></div><div><label>Subtítulo / pie</label><input name="subtitle" value="<?=val('subtitle','Radio La Grande de Huétamo')?>"></div><div><label>Estado del reproductor</label><input name="status_text" value="<?=val('status_text','Listo para escuchar')?>"></div><div><label>URL de streaming</label><input name="stream_url" placeholder="https://servidor/radio.mp3" value="<?=val('stream_url')?>"></div><div><label>Facebook URL</label><input name="facebook_url" value="<?=val('facebook_url')?>"></div><div><label>WhatsApp (código país + número, solo dígitos)</label><input name="whatsapp_number" value="<?=val('whatsapp_number')?>"></div><div><label>Mensaje inicial de WhatsApp</label><input name="whatsapp_message" value="<?=val('whatsapp_message')?>"></div><div><label>Color principal (HEX)</label><input name="primary_color" value="<?=val('primary_color','#D71920')?>"></div><div><label>Color de acento (HEX)</label><input name="accent_color" value="<?=val('accent_color','#F5C400')?>"></div><div><label>Chat visible</label><select name="chat_enabled"><option value="1" <?=val('chat_enabled','1')==='1'?'selected':''?>>Sí</option><option value="0" <?=val('chat_enabled','1')==='0'?'selected':''?>>No</option></select></div><div><label>Subir logotipo (JPG, PNG, WEBP; máx. 8 MB)</label><input type="file" name="logo_file" accept="image/jpeg,image/png,image/webp"><label><input type="checkbox" name="clear_logo" value="1" style="width:auto"> Quitar logotipo actual</label><small>Actual: <?=val('logo_url','No cargado')?></small></div><div><label>Subir fondo (JPG, PNG, WEBP; máx. 8 MB)</label><input type="file" name="background_file" accept="image/jpeg,image/png,image/webp"><label><input type="checkbox" name="clear_background" value="1" style="width:auto"> Quitar fondo actual</label><small>Actual: <?=val('background_url','No cargado')?></small></div></div><p><button>GUARDAR CONFIGURACIÓN</button></p></form>
+<section class="card"><h2>Botones y enlaces personalizados</h2><p><small>Iconos sugeridos: language, facebook, whatsapp, music, video, link.</small></p><form method="post" class="grid"><input type="hidden" name="action" value="add_link"><div><label>Texto del botón</label><input name="label" required placeholder="Nombre del botón"></div><div><label>Dirección URL</label><input name="url" type="url" required placeholder="https://..."></div><div><label>Icono</label><input name="icon" value="language"></div><div><label>Orden</label><input name="sort_order" type="number" value="0"></div><div><button>AGREGAR BOTÓN</button></div></form>
+<?php foreach($links as $l):?><div class="item"><form method="post"><input type="hidden" name="action" value="update_link"><input type="hidden" name="id" value="<?=$l['id']?>"><div><label>Texto</label><input name="label" value="<?=h($l['label'])?>"></div><div><label>URL</label><input name="url" value="<?=h($l['url'])?>"></div><div><label>Icono</label><input name="icon" value="<?=h($l['icon'])?>"></div><div><label>Orden</label><input name="sort_order" type="number" value="<?=$l['sort_order']?>"></div><div><label>Visible</label><input type="checkbox" name="is_active" value="1" <?=$l['is_active']?'checked':''?> style="width:auto"></div><div><button>GUARDAR</button></div></form><form method="post" onsubmit="return confirm('¿Eliminar este botón?')"><input type="hidden" name="action" value="delete_link"><input type="hidden" name="id" value="<?=$l['id']?>"><button class="danger">ELIMINAR</button></form></div><?php endforeach;?></section>
+<section class="card"><h2>Conexión de la aplicación</h2><p>URL de configuración: <code><?=h((isset($_SERVER['HTTPS'])?'https':'http').'://'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['SCRIPT_NAME']),'/').'/api.php')?></code></p><p><small>Los cambios se consultan desde la app al abrirla. Mantén activo el SSL.</small></p></section></div></body></html>
