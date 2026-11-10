@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel | La Grande de Huétamo</title>
+<style>
+:root{--red:#d71920;--gold:#ffd400;--bg:#101010;--card:#1b1b1b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font:15px system-ui,Arial}header{padding:22px;background:#171717;border-bottom:1px solid #333}main{max-width:900px;margin:24px auto;padding:0 16px}.card{background:var(--card);border:1px solid #333;border-radius:16px;padding:20px;margin-bottom:16px}h1{font-size:20px}label{display:block;margin:12px 0 6px}input{width:100%;padding:12px;border:1px solid #444;border-radius:9px;background:#101010;color:#fff}button{border:0;border-radius:10px;background:var(--red);color:#fff;padding:12px 18px;font-weight:700;cursor:pointer;margin-top:12px}.muted{color:#aaa}
+</style></head><body>
+<header><h1>📻 LA GRANDE DE HUÉTAMO · ADMIN</h1></header>
+<main>
+<section class="card"><h2>Acceso de administración</h2><p class="muted">Configura Firebase en este archivo para habilitar el acceso seguro.</p><label>Correo</label><input id="email" type="email"><label>Contraseña</label><input id="password" type="password"><button id="login">Entrar</button><p id="status" class="muted"></p></section>
+<section class="card"><h2>Configuración de Firebase</h2><p class="muted">En Firebase Console &gt; Configuración del proyecto &gt; Tus apps &gt; Web, copia firebaseConfig y sustituye los valores de ejemplo del archivo.</p></section>
+</main>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+import {getAuth,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+const firebaseConfig={apiKey:"REEMPLAZAR_API_KEY",authDomain:"TU_PROYECTO.firebaseapp.com",projectId:"TU_PROYECTO",storageBucket:"TU_PROYECTO.firebasestorage.app",messagingSenderId:"REEMPLAZAR",appId:"REEMPLAZAR"};
+const ready=!Object.values(firebaseConfig).some(v=>String(v).includes("REEMPLAZAR")||String(v).includes("TU_PROYECTO"));
+let auth;if(ready)auth=getAuth(initializeApp(firebaseConfig));else document.getElementById("status").textContent="Primero configura firebaseConfig en este archivo.";
+document.getElementById("login").onclick=async()=>{if(!ready)return;try{await signInWithEmailAndPassword(auth,document.getElementById("email").value,document.getElementById("password").value);document.getElementById("status").textContent="Sesión iniciada."}catch(e){document.getElementById("status").textContent="Error: "+e.message}};
+</script></body></html>
