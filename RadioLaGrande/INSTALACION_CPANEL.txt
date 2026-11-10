@@ -1,0 +1,9 @@
+INSTALACION EN CPANEL
+1. Crea una base MySQL y un usuario con todos los privilegios.
+2. Importa cpanel/database.sql desde phpMyAdmin.
+3. Edita cpanel/config.php con los datos de la base.
+4. Genera un hash de contraseña PHP con password_hash('TU_CLAVE', PASSWORD_DEFAULT) y reemplaza ADMIN_PASSWORD_HASH. Elimina el script temporal.
+5. Sube el contenido de cpanel a public_html/radio/ y abre https://TU-DOMINIO/radio/admin.php.
+6. En el panel configura el stream URL real, WhatsApp, enlaces, logotipo y fondo.
+7. Configura AppConfig.kt con https://TU-DOMINIO/radio/api.php.
+Usa HTTPS. No publiques contraseñas. El reproductor requiere una URL real de streaming.
