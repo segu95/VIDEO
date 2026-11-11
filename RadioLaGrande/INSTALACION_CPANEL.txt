@@ -5,5 +5,6 @@ INSTALACION EN CPANEL
 4. Genera un hash de contraseña PHP con password_hash('TU_CLAVE', PASSWORD_DEFAULT) y reemplaza ADMIN_PASSWORD_HASH. Elimina el script temporal.
 5. Sube el contenido de cpanel a public_html/radio/ y abre https://TU-DOMINIO/radio/admin.php.
 6. En el panel configura el stream URL real, WhatsApp, enlaces, logotipo y fondo.
-7. Configura AppConfig.kt con https://TU-DOMINIO/radio/api.php.
+7. En AppConfig.kt reemplaza TU-DOMINIO.com por tu dominio real; la URL API debe terminar en /radio/api.php.
+8. Abre la app; sincroniza al iniciar o pulsa «Sincronizar con panel web» en Administración.
 Usa HTTPS. No publiques contraseñas. El reproductor requiere una URL real de streaming.
