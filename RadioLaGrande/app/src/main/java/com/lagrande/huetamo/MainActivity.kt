@@ -72,7 +72,7 @@ private fun RadioApp(context: Context) {
     var showPin by remember { mutableStateOf(false) }
     var pin by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
-    var panelBaseUrl by remember { mutableStateOf(prefs.getString("panel_base_url", "") ?: "") }
+    var panelBaseUrl by remember { mutableStateOf(prefs.getString("panel_base_url", AppConfig.PANEL_BASE_URL) ?: AppConfig.PANEL_BASE_URL) }
     var showLinkDialog by remember { mutableStateOf(false) }
 
     var primaryColor by remember { mutableStateOf(parseRadioColor(prefs.getString("primary_color", "#E31320") ?: "#E31320", RadioRed)) }
