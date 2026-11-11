@@ -1,10 +1,24 @@
-INSTALACION EN CPANEL
-1. Crea una base MySQL y un usuario con todos los privilegios.
-2. Importa cpanel/database.sql desde phpMyAdmin.
-3. Edita cpanel/config.php con los datos de la base.
-4. Genera un hash de contraseña PHP con password_hash('TU_CLAVE', PASSWORD_DEFAULT) y reemplaza ADMIN_PASSWORD_HASH. Elimina el script temporal.
-5. Sube el contenido de cpanel a public_html/radio/ y abre https://TU-DOMINIO/radio/admin.php.
-6. En el panel configura el stream URL real, WhatsApp, enlaces, logotipo y fondo.
-7. En AppConfig.kt reemplaza TU-DOMINIO.com por tu dominio real; la URL API debe terminar en /radio/api.php.
-8. Abre la app; sincroniza al iniciar o pulsa «Sincronizar con panel web» en Administración.
-Usa HTTPS. No publiques contraseñas. El reproductor requiere una URL real de streaming.
+INSTALACIÓN EN CUALQUIER HOSTING CON CPANEL
+
+REQUISITOS
+- PHP 8.1 o superior con PDO MySQL y Fileinfo habilitados.
+- MySQL o MariaDB y phpMyAdmin.
+- Dominio o subdominio con certificado SSL activo (HTTPS).
+
+PASOS
+1. En cPanel crea una base de datos MySQL y un usuario. Asigna el usuario a la base con todos los privilegios.
+2. Abre phpMyAdmin, selecciona la base e importa cpanel/database.sql.
+3. Sube el contenido de la carpeta cpanel a public_html/radio/ (o a la carpeta equivalente de tu subdominio). Deben quedar admin.php, api.php, config.php, database.sql y la carpeta uploads.
+4. En config.php reemplaza DB_NAME, DB_USER y DB_PASS con los datos exactos creados en cPanel.
+5. Configura ADMIN_PASSWORD_HASH con un hash generado mediante password_hash('TU_CLAVE', PASSWORD_DEFAULT). No guardes la contraseña en texto plano ni dejes el archivo generador en el servidor.
+6. Verifica que cpanel/uploads tenga permiso de escritura para PHP (normalmente 755 o 775 según el hosting). No otorgues 777.
+7. Activa SSL/HTTPS en cPanel y espera a que el certificado esté emitido.
+8. Abre https://TU-DOMINIO/radio/admin.php e inicia sesión con usuario admin y la contraseña que generaste.
+9. En el panel configura el streaming, redes, WhatsApp, sitio web, colores, logotipo, fondo y enlaces.
+10. En Android abre Administración e introduce la URL base HTTPS, por ejemplo https://TU-DOMINIO/radio (sin /api.php ni /admin.php). Pulsa GUARDAR CAMBIOS y luego SINCRONIZAR CON PANEL WEB.
+
+NOTAS
+- Si todavía no tienes dominio, puedes preparar el código y la base de datos, pero no se podrá sincronizar desde Internet hasta tener una dirección HTTPS pública.
+- El hosting no tiene que ser Hostinger: sirve cualquier proveedor con cPanel, PHP y MySQL/MariaDB.
+- La sincronización actual descarga la configuración del panel a Android. La edición local de Android no actualiza el servidor.
+- No publiques config.php con credenciales reales en repositorios públicos.
