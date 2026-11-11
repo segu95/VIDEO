@@ -32,3 +32,17 @@ Proyecto nativo Kotlin + Jetpack Compose para Android 17 (API 37).
 - Los archivos gráficos originales no se incluyen en esta primera subida; se pueden seleccionar desde el panel.
 - Cambia el PIN inicial antes de distribuir la aplicación.
 - Esta es la fuente inicial editable, no un APK compilado ni una versión probada en dispositivo.
+
+
+## Sincronización remota con el panel web
+
+La rama `radio-la-grande-sync` incorpora la consulta de configuración remota mediante `RadioApi.kt`. La app descarga estación, frecuencia, streaming, redes, WhatsApp, web, logotipo, fondo, colores y enlaces al iniciar, y permite solicitar una actualización desde Administración.
+
+Antes de compilar la versión conectada:
+1. Sube la carpeta `cpanel/` al hosting con HTTPS.
+2. Crea la base de datos MySQL e importa `cpanel/database.sql`.
+3. Configura `cpanel/config.php` con credenciales y hash de administrador.
+4. Edita `AppConfig.kt` y reemplaza `TU-DOMINIO.com` por el dominio real.
+5. Entra al panel web, guarda la configuración y luego pulsa **Sincronizar con panel web** en la app.
+
+La sincronización es de lectura desde el panel hacia Android. Los cambios hechos en el panel local de la app no se suben a MySQL. El chat requiere una integración aparte.
