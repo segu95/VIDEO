@@ -42,7 +42,7 @@ Antes de compilar la versión conectada:
 1. Sube la carpeta `cpanel/` al hosting con HTTPS.
 2. Crea la base de datos MySQL e importa `cpanel/database.sql`.
 3. Configura `cpanel/config.php` con credenciales y hash de administrador.
-4. Abre Administración en Android e introduce la URL base HTTPS del panel, por ejemplo `https://tudominio.com/radio`.
+4. Abre Administración en Android e la dirección inicial será `https://lagrandedehuetamo.com/radio`. Confirma que los archivos PHP estén instalados en esa carpeta.
 5. Entra al panel web, guarda la configuración y luego pulsa **Sincronizar con panel web** en la app.
 
 La dirección del servidor se guarda desde la propia app; no hay que recompilar cuando cambie el dominio. La sincronización actual es de lectura desde el panel hacia Android. Los cambios realizados en los campos locales de Android no se escriben en MySQL. El chat requiere una integración aparte.
