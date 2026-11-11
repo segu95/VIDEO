@@ -72,6 +72,7 @@ private fun RadioApp(context: Context) {
     var showPin by remember { mutableStateOf(false) }
     var pin by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    var panelBaseUrl by remember { mutableStateOf(prefs.getString("panel_base_url", "") ?: "") }
     var showLinkDialog by remember { mutableStateOf(false) }
 
     var primaryColor by remember { mutableStateOf(parseRadioColor(prefs.getString("primary_color", "#E31320") ?: "#E31320", RadioRed)) }
@@ -79,14 +80,15 @@ private fun RadioApp(context: Context) {
     val scope = rememberCoroutineScope()
 
     fun syncRemote() {
-        if (AppConfig.API_URL.isBlank() || AppConfig.API_URL.contains("TU-DOMINIO")) {
-            message = "Configura el dominio del panel en AppConfig.kt"
+        val baseUrl = panelBaseUrl.trim().trimEnd('/')
+        if (baseUrl.isBlank() || !baseUrl.startsWith("https://")) {
+            message = "Primero guarda la dirección HTTPS de tu panel web"
             return
         }
         scope.launch {
             message = "Sincronizando con el panel web..."
             try {
-                val json = withContext(Dispatchers.IO) { RadioApi.fetchConfig(AppConfig.API_URL) }
+                val json = withContext(Dispatchers.IO) { RadioApi.fetchConfig("$baseUrl/api.php") }
                 if (!json.optBoolean("ok", false)) throw IllegalStateException("Respuesta API no válida")
                 val cfg = json.optJSONObject("settings") ?: JSONObject()
                 station = cfg.optString("station_name", station)
@@ -120,7 +122,7 @@ private fun RadioApp(context: Context) {
         }
     }
 
-    LaunchedEffect(AppConfig.API_URL) { syncRemote() }
+    LaunchedEffect(panelBaseUrl) { if (panelBaseUrl.startsWith("https://")) syncRemote() }
     var editingLink by remember { mutableStateOf<RadioLink?>(null) }
     var imageTarget by remember { mutableStateOf("background") }
 
@@ -141,7 +143,7 @@ private fun RadioApp(context: Context) {
             .putString("station", station).putString("frequency", frequency).putString("slogan", slogan)
             .putString("stream", stream).putString("background", backgroundUri).putString("logo", logoUri)
             .putString("facebook", facebook).putString("whatsapp", whatsapp).putString("website", website)
-            .putString("links", linksJson.toString()).apply()
+            .putString("links", linksJson.toString()).putString("panel_base_url", panelBaseUrl.trim().trimEnd('/')).apply()
         message = "Cambios guardados"
     }
 
@@ -166,13 +168,13 @@ private fun RadioApp(context: Context) {
                 AdminPanel(
                     station, { station = it }, frequency, { frequency = it }, slogan, { slogan = it },
                     stream, { stream = it }, facebook, { facebook = it }, whatsapp, { whatsapp = it },
-                    website, { website = it }, extraLinks,
+                    website, { website = it }, panelBaseUrl, { panelBaseUrl = it }, extraLinks,
                     onPickBackground = { imageTarget = "background"; imagePicker.launch(arrayOf("image/*")) },
                     onPickLogo = { imageTarget = "logo"; imagePicker.launch(arrayOf("image/*")) },
                     onAdd = { editingLink = null; showLinkDialog = true },
                     onEdit = { editingLink = it; showLinkDialog = true },
                     onDelete = { item -> extraLinks = extraLinks.filterNot { it.id == item.id }; save() },
-                    onSave = { save() }, onBack = { admin = false }, onSync = { syncRemote() }, onOpenWebAdmin = { openLink(context, AppConfig.ADMIN_URL) }, message = message
+                    onSave = { save() }, onBack = { admin = false }, onSync = { syncRemote() }, onOpenWebAdmin = { openLink(context, panelBaseUrl.trim().trimEnd('/') + "/admin.php") }, message = message
                 )
             } else {
                 HomePanel(
@@ -305,7 +307,7 @@ private fun AdminPanel(
     station: String, setStation: (String) -> Unit, frequency: String, setFrequency: (String) -> Unit,
     slogan: String, setSlogan: (String) -> Unit, stream: String, setStream: (String) -> Unit,
     facebook: String, setFacebook: (String) -> Unit, whatsapp: String, setWhatsapp: (String) -> Unit,
-    website: String, setWebsite: (String) -> Unit, links: List<RadioLink>,
+    website: String, setWebsite: (String) -> Unit, panelBaseUrl: String, setPanelBaseUrl: (String) -> Unit, links: List<RadioLink>,
     onPickBackground: () -> Unit, onPickLogo: () -> Unit, onAdd: () -> Unit,
     onEdit: (RadioLink) -> Unit, onDelete: (RadioLink) -> Unit, onSave: () -> Unit,
     onBack: () -> Unit, onSync: () -> Unit, onOpenWebAdmin: () -> Unit, message: String
@@ -325,6 +327,7 @@ private fun AdminPanel(
         item { AdminField("Facebook", facebook, setFacebook, "https://...") }
         item { AdminField("WhatsApp", whatsapp, setWhatsapp, "https://wa.me/...") }
         item { AdminField("Sitio web", website, setWebsite, "https://...") }
+        item { AdminField("Dirección del panel (HTTPS)", panelBaseUrl, setPanelBaseUrl, "https://tudominio.com/radio") }
         item {
             Text("Imágenes", color = LocalRadioAccent.current, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
