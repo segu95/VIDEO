@@ -40,8 +40,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val LocalRadioPrimary.current = Color(0xFFE31320)
-private val LocalRadioAccent.current = Color(0xFFFFD21A)
+private val RadioRed = Color(0xFFE31320)
+private val RadioGold = Color(0xFFFFD21A)
 private val LocalRadioPrimary = compositionLocalOf { RadioRed }
 private val LocalRadioAccent = compositionLocalOf { RadioGold }
 
