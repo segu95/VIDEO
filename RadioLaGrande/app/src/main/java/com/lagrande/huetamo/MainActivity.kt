@@ -122,7 +122,7 @@ private fun RadioApp(context: Context) {
         }
     }
 
-    LaunchedEffect(panelBaseUrl) { if (panelBaseUrl.startsWith("https://")) syncRemote() }
+    LaunchedEffect(Unit) { if (panelBaseUrl.startsWith("https://")) syncRemote() }
     var editingLink by remember { mutableStateOf<RadioLink?>(null) }
     var imageTarget by remember { mutableStateOf("background") }
 
@@ -355,7 +355,7 @@ private fun AdminPanel(
             }
         }
         item {
-            OutlinedButton(onClick = onOpenWebAdmin, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.OpenInBrowser, null); Spacer(Modifier.width(8.dp)); Text("ABRIR PANEL WEB") }
+            OutlinedButton(onClick = onOpenWebAdmin, enabled = panelBaseUrl.startsWith("https://"), modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.OpenInBrowser, null); Spacer(Modifier.width(8.dp)); Text("ABRIR PANEL WEB") }
             OutlinedButton(onClick = onSync, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.CloudSync, null); Spacer(Modifier.width(8.dp)); Text("SINCRONIZAR CON PANEL WEB") }
             Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = LocalRadioPrimary.current)) {
                 Icon(Icons.Default.Save, null); Spacer(Modifier.width(8.dp)); Text("GUARDAR CAMBIOS")
