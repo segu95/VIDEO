@@ -172,7 +172,7 @@ private fun RadioApp(context: Context) {
                     onAdd = { editingLink = null; showLinkDialog = true },
                     onEdit = { editingLink = it; showLinkDialog = true },
                     onDelete = { item -> extraLinks = extraLinks.filterNot { it.id == item.id }; save() },
-                    onSave = { save() }, onBack = { admin = false }, onSync = { syncRemote() }, message = message
+                    onSave = { save() }, onBack = { admin = false }, onSync = { syncRemote() }, onOpenWebAdmin = { openLink(context, AppConfig.ADMIN_URL) }, message = message
                 )
             } else {
                 HomePanel(
@@ -308,7 +308,7 @@ private fun AdminPanel(
     website: String, setWebsite: (String) -> Unit, links: List<RadioLink>,
     onPickBackground: () -> Unit, onPickLogo: () -> Unit, onAdd: () -> Unit,
     onEdit: (RadioLink) -> Unit, onDelete: (RadioLink) -> Unit, onSave: () -> Unit,
-    onBack: () -> Unit, onSync: () -> Unit, message: String
+    onBack: () -> Unit, onSync: () -> Unit, onOpenWebAdmin: () -> Unit, message: String
 ) {
     LazyColumn(Modifier.fillMaxSize().background(Color(0xFF101010)).statusBarsPadding().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -352,6 +352,7 @@ private fun AdminPanel(
             }
         }
         item {
+            OutlinedButton(onClick = onOpenWebAdmin, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.OpenInBrowser, null); Spacer(Modifier.width(8.dp)); Text("ABRIR PANEL WEB") }
             OutlinedButton(onClick = onSync, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.CloudSync, null); Spacer(Modifier.width(8.dp)); Text("SINCRONIZAR CON PANEL WEB") }
             Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = LocalRadioPrimary.current)) {
                 Icon(Icons.Default.Save, null); Spacer(Modifier.width(8.dp)); Text("GUARDAR CAMBIOS")
