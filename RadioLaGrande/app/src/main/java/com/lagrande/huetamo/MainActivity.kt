@@ -231,13 +231,13 @@ private fun HomePanel(
             if (logo.isNotBlank()) {
                 AsyncImage(Uri.parse(logo), "Logotipo", Modifier.fillMaxWidth().height(190.dp), contentScale = ContentScale.Fit)
             } else {
-                Text("LA GRANDE", color = RadioRed, fontSize = 28.sp, fontWeight = FontWeight.Black)
+                Text("LA GRANDE", color = LocalRadioPrimary.current, fontSize = 28.sp, fontWeight = FontWeight.Black)
                 Text("🎙️  🎧", fontSize = 64.sp)
-                Text("HUÉTAMO", color = RadioGold, fontSize = 32.sp, fontWeight = FontWeight.Black)
+                Text("HUÉTAMO", color = LocalRadioAccent.current, fontSize = 32.sp, fontWeight = FontWeight.Black)
             }
             Spacer(Modifier.height(14.dp))
             Text(station, color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Text(frequency, color = RadioGold, fontWeight = FontWeight.Bold)
+            Text(frequency, color = LocalRadioAccent.current, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(26.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f).height(1.dp).background(Color.White.copy(.5f)))
@@ -246,7 +246,7 @@ private fun HomePanel(
             }
             Spacer(Modifier.height(18.dp))
             Button(onClick = onPlay, modifier = Modifier.fillMaxWidth(.86f).height(64.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = RadioRed), shape = RoundedCornerShape(40.dp)) {
+                colors = ButtonDefaults.buttonColors(containerColor = LocalRadioPrimary.current), shape = RoundedCornerShape(40.dp)) {
                 Icon(if (playing) Icons.Default.Pause else Icons.Default.PlayArrow, null, Modifier.size(30.dp))
                 Spacer(Modifier.width(12.dp))
                 Text(if (playing) "PAUSAR" else "ESCUCHAR", fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
@@ -254,12 +254,12 @@ private fun HomePanel(
             Spacer(Modifier.height(12.dp))
             Surface(color = Color.Black.copy(.48f), shape = RoundedCornerShape(30.dp), border = BorderStroke(1.dp, Color.White.copy(.25f))) {
                 Row(Modifier.padding(horizontal = 20.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Radio, null, tint = RadioGold)
+                    Icon(Icons.Default.Radio, null, tint = LocalRadioAccent.current)
                     Spacer(Modifier.width(10.dp))
                     Text(if (playing) "Transmitiendo en vivo" else "Lista para escuchar", color = Color.White)
                 }
             }
-            if (message.isNotBlank()) Text(message, color = RadioGold, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
+            if (message.isNotBlank()) Text(message, color = LocalRadioAccent.current, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
             Spacer(Modifier.height(25.dp))
             Text("Conéctate con nosotros", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -277,7 +277,7 @@ private fun HomePanel(
         Row(Modifier.fillMaxWidth().background(Color(0xFF111111)).navigationBarsPadding().height(70.dp),
             horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.Home, null, tint = RadioRed, modifier = Modifier.size(27.dp))
+                Icon(Icons.Default.Home, null, tint = LocalRadioPrimary.current, modifier = Modifier.size(27.dp))
                 Text("Inicio", color = Color.White.copy(.75f), fontSize = 12.sp)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -326,7 +326,7 @@ private fun AdminPanel(
         item { AdminField("WhatsApp", whatsapp, setWhatsapp, "https://wa.me/...") }
         item { AdminField("Sitio web", website, setWebsite, "https://...") }
         item {
-            Text("Imágenes", color = RadioGold, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("Imágenes", color = LocalRadioAccent.current, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onPickBackground, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Image, null); Text("Fondo") }
                 OutlinedButton(onClick = onPickLogo, modifier = Modifier.weight(1f)) { Icon(Icons.Default.Image, null); Text("Logotipo") }
@@ -334,8 +334,8 @@ private fun AdminPanel(
         }
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Botones y enlaces", color = RadioGold, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
-                Button(onClick = onAdd, colors = ButtonDefaults.buttonColors(containerColor = RadioRed)) { Icon(Icons.Default.Add, null); Text("Agregar") }
+                Text("Botones y enlaces", color = LocalRadioAccent.current, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                Button(onClick = onAdd, colors = ButtonDefaults.buttonColors(containerColor = LocalRadioPrimary.current)) { Icon(Icons.Default.Add, null); Text("Agregar") }
             }
         }
         items(links, key = { it.id }) { link ->
@@ -344,19 +344,19 @@ private fun AdminPanel(
                     Column(Modifier.weight(1f)) {
                         Text(link.title, color = Color.White, fontWeight = FontWeight.Bold)
                         Text(link.url, color = Color.LightGray, fontSize = 11.sp, maxLines = 1)
-                        Text(if (link.enabled) "Visible" else "Oculto", color = RadioGold, fontSize = 11.sp)
+                        Text(if (link.enabled) "Visible" else "Oculto", color = LocalRadioAccent.current, fontSize = 11.sp)
                     }
-                    IconButton(onClick = { onEdit(link) }) { Icon(Icons.Default.Edit, null, tint = RadioGold) }
-                    IconButton(onClick = { onDelete(link) }) { Icon(Icons.Default.Delete, null, tint = RadioRed) }
+                    IconButton(onClick = { onEdit(link) }) { Icon(Icons.Default.Edit, null, tint = LocalRadioAccent.current) }
+                    IconButton(onClick = { onDelete(link) }) { Icon(Icons.Default.Delete, null, tint = LocalRadioPrimary.current) }
                 }
             }
         }
         item {
             OutlinedButton(onClick = onSync, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.CloudSync, null); Spacer(Modifier.width(8.dp)); Text("SINCRONIZAR CON PANEL WEB") }
-            Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = RadioRed)) {
+            Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = LocalRadioPrimary.current)) {
                 Icon(Icons.Default.Save, null); Spacer(Modifier.width(8.dp)); Text("GUARDAR CAMBIOS")
             }
-            if (message.isNotBlank()) Text(message, color = RadioGold)
+            if (message.isNotBlank()) Text(message, color = LocalRadioAccent.current)
             Text("PIN inicial: 1069. Cámbialo antes de distribuir la app.", color = Color.LightGray, fontSize = 12.sp)
         }
     }
@@ -369,7 +369,7 @@ private fun AdminField(label: String, value: String, onChange: (String) -> Unit,
         OutlinedTextField(value, onChange, modifier = Modifier.fillMaxWidth(), singleLine = true,
             placeholder = { if (hint.isNotBlank()) Text(hint) },
             colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                focusedBorderColor = RadioGold, unfocusedBorderColor = Color.Gray))
+                focusedBorderColor = LocalRadioAccent.current, unfocusedBorderColor = Color.Gray))
     }
 }
 
