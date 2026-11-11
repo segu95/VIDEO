@@ -15,7 +15,7 @@ PASOS
 7. Activa SSL/HTTPS en cPanel y espera a que el certificado esté emitido.
 8. Abre https://TU-DOMINIO/radio/admin.php e inicia sesión con usuario admin y la contraseña que generaste.
 9. En el panel configura el streaming, redes, WhatsApp, sitio web, colores, logotipo, fondo y enlaces.
-10. En Android abre Administración e introduce la URL base HTTPS, por ejemplo https://TU-DOMINIO/radio (sin /api.php ni /admin.php). Pulsa GUARDAR CAMBIOS y luego SINCRONIZAR CON PANEL WEB.
+10. En Android la dirección inicial está configurada como https://lagrandedehuetamo.com/radio (sin /api.php ni /admin.php). Si instalas el panel en otra carpeta, cambia la dirección desde Administración. Pulsa GUARDAR CAMBIOS y luego SINCRONIZAR CON PANEL WEB.
 
 NOTAS
 - Si todavía no tienes dominio, puedes preparar el código y la base de datos, pero no se podrá sincronizar desde Internet hasta tener una dirección HTTPS pública.
