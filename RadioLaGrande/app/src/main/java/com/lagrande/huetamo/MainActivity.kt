@@ -36,9 +36,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import coil.compose.AsyncImage
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-private val RadioRed = Color(0xFFE31320)
-private val RadioGold = Color(0xFFFFD21A)
+private val LocalRadioPrimary.current = Color(0xFFE31320)
+private val LocalRadioAccent.current = Color(0xFFFFD21A)
+private val LocalRadioPrimary = compositionLocalOf { RadioRed }
+private val LocalRadioAccent = compositionLocalOf { RadioGold }
 
 data class RadioLink(val id: Long, val title: String, val url: String, val enabled: Boolean = true)
 
@@ -68,6 +73,54 @@ private fun RadioApp(context: Context) {
     var pin by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var showLinkDialog by remember { mutableStateOf(false) }
+
+    var primaryColor by remember { mutableStateOf(parseRadioColor(prefs.getString("primary_color", "#E31320") ?: "#E31320", RadioRed)) }
+    var accentColor by remember { mutableStateOf(parseRadioColor(prefs.getString("accent_color", "#FFD21A") ?: "#FFD21A", RadioGold)) }
+    val scope = rememberCoroutineScope()
+
+    fun syncRemote() {
+        if (AppConfig.API_URL.isBlank() || AppConfig.API_URL.contains("TU-DOMINIO")) {
+            message = "Configura el dominio del panel en AppConfig.kt"
+            return
+        }
+        scope.launch {
+            message = "Sincronizando con el panel web..."
+            try {
+                val json = withContext(Dispatchers.IO) { RadioApi.fetchConfig(AppConfig.API_URL) }
+                if (!json.optBoolean("ok", false)) throw IllegalStateException("Respuesta API no válida")
+                val cfg = json.optJSONObject("settings") ?: JSONObject()
+                station = cfg.optString("station_name", station)
+                frequency = cfg.optString("frequency", frequency)
+                slogan = cfg.optString("subtitle", slogan)
+                stream = cfg.optString("stream_url", stream)
+                facebook = cfg.optString("facebook_url", facebook)
+                website = cfg.optString("website_url", website)
+                backgroundUri = cfg.optString("background_url", backgroundUri)
+                logoUri = cfg.optString("logo_url", logoUri)
+                val waNumber = cfg.optString("whatsapp_number", "")
+                val waMessage = cfg.optString("whatsapp_message", "Hola, quiero comunicarme con la radio.")
+                whatsapp = if (waNumber.startsWith("http")) waNumber else if (waNumber.isNotBlank()) "https://wa.me/${waNumber.filter { it.isDigit() }}?text=${Uri.encode(waMessage)}" else whatsapp
+                primaryColor = parseRadioColor(cfg.optString("primary_color"), RadioRed)
+                accentColor = parseRadioColor(cfg.optString("accent_color"), RadioGold)
+                val serverLinks = json.optJSONArray("links") ?: JSONArray()
+                extraLinks = (0 until serverLinks.length()).mapNotNull { index ->
+                    val item = serverLinks.optJSONObject(index) ?: return@mapNotNull null
+                    RadioLink(item.optLong("id", index.toLong()), item.optString("label"), item.optString("url"), true)
+                }
+                prefs.edit().putString("station", station).putString("frequency", frequency)
+                    .putString("slogan", slogan).putString("stream", stream).putString("facebook", facebook)
+                    .putString("whatsapp", whatsapp).putString("website", website)
+                    .putString("background", backgroundUri).putString("logo", logoUri)
+                    .putString("primary_color", cfg.optString("primary_color"))
+                    .putString("accent_color", cfg.optString("accent_color")).apply()
+                message = "Configuración sincronizada con el panel web"
+            } catch (_: Exception) {
+                message = "No se pudo sincronizar. Revisa dominio, HTTPS y conexión."
+            }
+        }
+    }
+
+    LaunchedEffect(AppConfig.API_URL) { syncRemote() }
     var editingLink by remember { mutableStateOf<RadioLink?>(null) }
     var imageTarget by remember { mutableStateOf("background") }
 
@@ -100,7 +153,8 @@ private fun RadioApp(context: Context) {
         }
     }
 
-    MaterialTheme(colorScheme = darkColorScheme(primary = RadioRed, secondary = RadioGold, background = Color(0xFF090707), surface = Color(0xFF1B1717))) {
+    MaterialTheme(colorScheme = darkColorScheme(primary = primaryColor, secondary = accentColor, background = Color(0xFF090707), surface = Color(0xFF1B1717))) {
+      CompositionLocalProvider(LocalRadioPrimary provides primaryColor, LocalRadioAccent provides accentColor) {
         Box(Modifier.fillMaxSize().background(Color(0xFF090707))) {
             if (backgroundUri.isNotBlank()) {
                 AsyncImage(model = Uri.parse(backgroundUri), contentDescription = "Fondo", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -118,7 +172,7 @@ private fun RadioApp(context: Context) {
                     onAdd = { editingLink = null; showLinkDialog = true },
                     onEdit = { editingLink = it; showLinkDialog = true },
                     onDelete = { item -> extraLinks = extraLinks.filterNot { it.id == item.id }; save() },
-                    onSave = { save() }, onBack = { admin = false }, message = message
+                    onSave = { save() }, onBack = { admin = false }, onSync = { syncRemote() }, message = message
                 )
             } else {
                 HomePanel(
@@ -157,6 +211,7 @@ private fun RadioApp(context: Context) {
                 })
             }
         }
+      }
     }
 }
 
@@ -253,7 +308,7 @@ private fun AdminPanel(
     website: String, setWebsite: (String) -> Unit, links: List<RadioLink>,
     onPickBackground: () -> Unit, onPickLogo: () -> Unit, onAdd: () -> Unit,
     onEdit: (RadioLink) -> Unit, onDelete: (RadioLink) -> Unit, onSave: () -> Unit,
-    onBack: () -> Unit, message: String
+    onBack: () -> Unit, onSync: () -> Unit, message: String
 ) {
     LazyColumn(Modifier.fillMaxSize().background(Color(0xFF101010)).statusBarsPadding().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -297,6 +352,7 @@ private fun AdminPanel(
             }
         }
         item {
+            OutlinedButton(onClick = onSync, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.CloudSync, null); Spacer(Modifier.width(8.dp)); Text("SINCRONIZAR CON PANEL WEB") }
             Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp), colors = ButtonDefaults.buttonColors(containerColor = RadioRed)) {
                 Icon(Icons.Default.Save, null); Spacer(Modifier.width(8.dp)); Text("GUARDAR CAMBIOS")
             }
@@ -342,6 +398,8 @@ private fun EditLinkDialog(initial: RadioLink?, onDismiss: () -> Unit, onSave: (
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
     )
 }
+
+private fun parseRadioColor(value: String, fallback: Color): Color = try { Color(android.graphics.Color.parseColor(value)) } catch (_: Exception) { fallback }
 
 private fun readLinks(prefs: android.content.SharedPreferences): List<RadioLink> = try {
     val array = JSONArray(prefs.getString("links", "[]"))
