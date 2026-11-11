@@ -21,4 +21,4 @@ function save_setting(string $key,string $value):void {
  $q=db()->prepare('INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');$q->execute([$key,$value]);
 }
 function h(string $s):string{return htmlspecialchars($s,ENT_QUOTES,'UTF-8');}
-function require_admin():void{session_start();if(empty($_SESSION['radio_admin'])){header('Location: admin.php');exit;}}
+function require_admin():void{if(session_status()!==PHP_SESSION_ACTIVE)session_start();if(empty($_SESSION['radio_admin'])){header('Location: admin.php');exit;}}
