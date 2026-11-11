@@ -1,7 +1,11 @@
 package com.lagrande.huetamo
 
-/** Cambia TU-DOMINIO por el dominio real cuando publiques el panel. */
+/**
+ * Servidor de Radio La Grande de Huétamo.
+ * El panel PHP debe instalarse en /radio dentro del hosting del dominio.
+ */
 object AppConfig {
-    const val API_URL = "https://TU-DOMINIO.com/radio/api.php"
-    const val ADMIN_URL = "https://TU-DOMINIO.com/radio/admin.php"
+    const val PANEL_BASE_URL = "https://lagrandedehuetamo.com/radio"
+    const val API_URL = "$PANEL_BASE_URL/api.php"
+    const val ADMIN_URL = "$PANEL_BASE_URL/admin.php"
 }
